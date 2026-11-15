@@ -6,6 +6,7 @@ use App\Models\Bin;
 use App\Models\Device;
 use App\Models\Notification;
 use App\Models\Transaction;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PhpMqtt\Client\Facades\MQTT;
 use Tests\TestCase;
@@ -33,7 +34,7 @@ class SmartEcoControllerTest extends TestCase
             'description' => 'Setoran Sampah Anorganik',
             'amount' => 1.2,
             'unit' => 'kg',
-            'points_earned' => 60,
+            'points_earned' => 0,
             'otp_code' => '4821',
             'status' => 'pending',
             'expires_at' => now()->addMinutes(5),
@@ -45,7 +46,7 @@ class SmartEcoControllerTest extends TestCase
 
         $this->postJson('/api/claim-otp', ['otp_code' => '4821'])
             ->assertOk()
-            ->assertJsonPath('total_points', 110);
+            ->assertJsonPath('total_points', 50);
 
         $this->assertSame(0, Transaction::where('status', 'pending')->count());
         $this->assertSame(2, Transaction::where('status', 'claimed')->where('citizen_name', 'Warga RT')->count());
@@ -106,6 +107,7 @@ class SmartEcoControllerTest extends TestCase
         ]);
         $this->assertDatabaseHas('notifications', [
             'title' => 'Penjemputan Anorganik Selesai',
+            'message' => 'Pengosongan kompartemen selesai • Siap digunakan kembali.',
             'is_read' => false,
             'is_resolved' => true,
         ]);
@@ -157,11 +159,44 @@ class SmartEcoControllerTest extends TestCase
             'unit' => 'kg',
             'status' => 'claimed',
         ]);
+        Transaction::create([
+            'hub_id' => 'PANDES-HUB-01',
+            'category' => 'jelantah',
+            'description' => 'Minyak Dapur Bekas',
+            'amount' => 0.5,
+            'unit' => 'L',
+            'points_earned' => 50,
+            'status' => 'claimed',
+        ]);
+        Transaction::create([
+            'hub_id' => 'PANDES-HUB-01',
+            'category' => 'anorganik',
+            'description' => 'Setoran Sampah Anorganik',
+            'amount' => 2,
+            'unit' => 'kg',
+            'points_earned' => 0,
+            'status' => 'claimed',
+        ]);
 
+        $this->actingAs(User::factory()->create([
+            'name' => 'Pengurus RT 03',
+            'email' => 'admin@smartecort.id',
+        ]));
         $this->get('/')->assertOk();
-        $this->get('/riwayat')->assertOk();
+        $this->get('/riwayat')
+            ->assertOk()
+            ->assertSee('+50 Poin Eco')
+            ->assertSee('Setoran Rutin');
         $this->get('/notifikasi')->assertOk();
         $this->get('/perangkat')->assertOk();
+        $this->get('/profil')
+            ->assertOk()
+            ->assertSee('Pengurus RT 03')
+            ->assertSee('admin@smartecort.id')
+            ->assertSee('Admin & Operator IoT')
+            ->assertSee('PANDES-HUB-01')
+            ->assertSee('0,5')
+            ->assertSee('50');
         $this->get('/riwayat/export-pdf')
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf')

@@ -59,6 +59,20 @@ svg { display: block; width: 22px; height: 22px; }
 .brand-copy { display: grid; line-height: 1.25; }
 .brand-copy strong { font-size: 14px; font-weight: 800; letter-spacing: -.03em; }
 .brand-copy small { margin-top: 3px; color: var(--muted); font-size: 10px; }
+.profile-button {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    place-items: center;
+    color: var(--green);
+    background: var(--green-soft);
+    border: 1px solid #d6f1e3;
+    border-radius: 50%;
+    transition: color .18s ease, background .18s ease, transform .18s ease;
+}
+.profile-button:hover { color: white; background: var(--green); transform: translateY(-1px); }
+.profile-button svg { width: 20px; height: 20px; }
 
 .desktop-nav { display: none; align-items: center; gap: 5px; }
 .nav-link {
@@ -283,6 +297,7 @@ h1, h2, h3, p { margin-top: 0; }
 .history-item__amount { display: grid; flex: 0 0 auto; justify-items: end; gap: 4px; margin-left: auto; }
 .history-item__amount > strong { font-size: 10px; white-space: nowrap; }
 .points-badge { padding: 3px 6px; color: var(--green); background: var(--green-soft); border-radius: 99px; font-size: 8px; font-weight: 800; white-space: nowrap; }
+.routine-badge { padding: 3px 7px; color: #64716b; background: #f1f3f4; border-radius: 99px; font-size: 8px; font-weight: 800; white-space: nowrap; }
 .download-button { margin-top: 14px; }
 .download-button svg, .mark-read-button svg { width: 17px; height: 17px; }
 
@@ -421,12 +436,57 @@ h1, h2, h3, p { margin-top: 0; }
 .otp-input { font-size: 20px; font-weight: 800; letter-spacing: .35em; text-align: center; }
 .dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 4px; }
 
+.auth-page { min-height: 100vh; background: var(--page); }
+.auth-shell { display: grid; width: min(100% - 32px, 430px); min-height: 100vh; align-content: center; justify-items: center; gap: 16px; margin: auto; padding: 26px 0; }
+.auth-card { width: 100%; padding: 25px 22px; background: white; border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 18px 55px rgb(23 33 29 / 7%); }
+.auth-brand { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 27px; }
+.auth-brand .brand-mark { width: 46px; height: 46px; }
+.auth-brand .brand-mark svg { width: 28px; height: 28px; }
+.auth-heading { margin-bottom: 20px; }
+.auth-heading h1 { margin: 0; font-size: 25px; font-weight: 800; letter-spacing: -.05em; }
+.auth-heading > p:last-child { margin: 6px 0 0; color: var(--muted); font-size: 11px; }
+.auth-form { display: grid; gap: 9px; }
+.auth-form .field-label { margin-top: 4px; }
+.auth-submit { min-height: 46px; margin-top: 9px; font-size: 12px; }
+.auth-error { margin: 0 0 15px; padding: 10px 12px; color: #b91c1c; background: var(--red-soft); border: 1px solid #fecaca; border-radius: 10px; font-size: 10px; font-weight: 700; }
+.demo-account { display: grid; gap: 5px; margin-top: 18px; padding: 12px; color: #5b6b63; background: #f7faf8; border: 1px solid #e8efeb; border-radius: 11px; font-size: 9px; }
+.demo-account strong { margin-bottom: 2px; color: #42534a; font-size: 10px; }
+.demo-account code { color: var(--green); font-family: "Inter", sans-serif; font-weight: 800; }
+.auth-footer { margin: 0; color: #8a9690; font-size: 9px; text-align: center; }
+
+.profile-hero { display: flex; align-items: center; gap: 15px; padding: 19px; }
+.profile-avatar { display: grid; width: 64px; height: 64px; flex: 0 0 auto; place-items: center; color: var(--green); background: var(--green-soft); border-radius: 20px; }
+.profile-avatar svg { width: 32px; height: 32px; }
+.profile-identity { min-width: 0; }
+.profile-identity .eyebrow { margin-bottom: 3px; }
+.profile-identity h2 { overflow-wrap: anywhere; margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -.04em; }
+.profile-identity > p:not(.eyebrow) { overflow-wrap: anywhere; margin: 3px 0 7px; color: var(--muted); font-size: 10px; }
+.role-badge { display: inline-block; padding: 5px 8px; color: var(--green); background: var(--green-soft); border-radius: 99px; font-size: 9px; font-weight: 800; }
+.profile-details { display: grid; gap: 0; padding: 5px 16px; }
+.profile-details > div { display: flex; justify-content: space-between; gap: 15px; padding: 13px 0; border-bottom: 1px solid #eef0f1; font-size: 10px; }
+.profile-details > div:last-child { border-bottom: 0; }
+.profile-details span { color: var(--muted); }
+.profile-details strong { overflow-wrap: anywhere; text-align: right; }
+.profile-stats { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.profile-stat { display: grid; min-height: 128px; align-content: center; gap: 5px; padding: 17px; background: white; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+.profile-stat--amber { border-color: #f5e4bd; }
+.profile-stat--green { border-color: #d6f1e3; }
+.profile-stat__label { color: var(--muted); font-size: 10px; font-weight: 700; }
+.profile-stat > strong { color: var(--amber); font-size: 27px; font-weight: 800; letter-spacing: -.05em; }
+.profile-stat--green > strong { color: var(--green); }
+.profile-stat > strong small { font-size: 11px; letter-spacing: 0; }
+.profile-stat__foot { color: #89958e; font-size: 9px; }
+.logout-form { margin-top: 18px; }
+.button--logout { color: var(--red); background: var(--red-soft); border-color: #fecaca; }
+.button--logout:hover { color: white; background: var(--red); border-color: var(--red); }
+
 @media (min-width: 560px) {
     .page-shell { padding-right: 24px; padding-left: 24px; }
     .filter-pills { margin-right: 0; margin-left: 0; padding-right: 0; padding-left: 0; }
     .summary-grid { grid-template-columns: 1.3fr 1fr; }
     .bin-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .device-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .profile-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .weekly-banner__note { display: block; }
     .toast-region { right: 20px; bottom: 20px; left: auto; width: min(360px, calc(100vw - 40px)); }
 }
@@ -467,6 +527,9 @@ h1, h2, h3, p { margin-top: 0; }
     .device-hero { gap: 22px; padding: 25px; }
     .device-hero__art { width: 100px; height: 100px; }
     .device-hero__art svg { width: 80px; height: 80px; }
+    .profile-hero { gap: 20px; padding: 24px; }
+    .profile-avatar { width: 78px; height: 78px; }
+    .profile-avatar svg { width: 38px; height: 38px; }
     .device-hero__title h2 { font-size: 20px; }
     .device-id, .device-location { font-size: 11px; }
     .control-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }

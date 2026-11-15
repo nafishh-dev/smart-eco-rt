@@ -42,7 +42,11 @@
                     </div>
                     <div class="history-item__amount">
                         <strong>{{ number_format($transaction->amount, 1, ',', '.') }} {{ $transaction->unit }}</strong>
-                        <span class="points-badge">+{{ $transaction->points_earned }} Poin Eco</span>
+                        @if ($transaction->category === 'jelantah' && $transaction->points_earned > 0)
+                            <span class="points-badge">+{{ $transaction->points_earned }} Poin Eco</span>
+                        @else
+                            <span class="routine-badge">Setoran Rutin</span>
+                        @endif
                     </div>
                 </article>
             @empty

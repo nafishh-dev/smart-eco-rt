@@ -39,6 +39,9 @@
                 Perangkat
             </a>
         </nav>
+        <a class="profile-button" href="{{ route('profil') }}" aria-label="Buka profil">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.8"/><path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </a>
     </header>
 
     <main class="page-shell">

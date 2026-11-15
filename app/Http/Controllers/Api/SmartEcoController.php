@@ -104,7 +104,9 @@ class SmartEcoController extends Controller
             Notification::create([
                 'type' => 'info',
                 'title' => 'Penjemputan '.ucfirst($category).' Selesai',
-                'message' => 'Pengosongan selesai • +50 Poin Eco ditambahkan.',
+                'message' => $category === 'jelantah'
+                    ? 'Pengosongan selesai • +50 Poin Eco ditambahkan.'
+                    : 'Pengosongan kompartemen selesai • Siap digunakan kembali.',
                 'bin_category' => $category,
                 'is_read' => false,
                 'is_resolved' => true,

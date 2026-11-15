@@ -7,8 +7,8 @@ use App\Models\Device;
 use App\Models\Notification;
 use App\Models\Transaction;
 use Illuminate\Console\Command;
-use PhpMqtt\Client\Facades\MQTT;
 use JsonException;
+use PhpMqtt\Client\Facades\MQTT;
 
 class MqttListenCommand extends Command
 {
@@ -107,7 +107,7 @@ class MqttListenCommand extends Command
                     'description' => 'Setoran Sampah Anorganik',
                     'amount' => $kgAnorganik,
                     'unit' => 'kg',
-                    'points_earned' => (int) round($kgAnorganik * 50),
+                    'points_earned' => 0,
                     'otp_code' => $otpCode,
                     'status' => 'pending',
                     'expires_at' => now()->addMinutes(5),

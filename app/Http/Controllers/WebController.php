@@ -7,13 +7,14 @@ use App\Models\Device;
 use App\Models\Notification;
 use App\Models\Transaction;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class WebController extends Controller
 {
-    public function dashboard(): View
+    public function dashboard(): ViewContract
     {
         $bins = Bin::all()->keyBy('category');
         $totalWeight = Bin::sum('current_weight');
@@ -26,7 +27,7 @@ class WebController extends Controller
         return view('dashboard', compact('bins', 'totalWeight', 'device', 'isOnline', 'unreadCount'));
     }
 
-    public function riwayat(Request $request): View
+    public function riwayat(Request $request): ViewContract
     {
         $filters = $request->validate([
             'category' => ['nullable', 'in:organik,anorganik,jelantah'],
@@ -57,7 +58,7 @@ class WebController extends Controller
             ->download('laporan-smart-eco-rt.pdf');
     }
 
-    public function notifikasi(Request $request): View
+    public function notifikasi(Request $request): ViewContract
     {
         $filters = $request->validate([
             'type' => ['nullable', 'in:warning,info'],
@@ -73,7 +74,7 @@ class WebController extends Controller
         return view('notifikasi', compact('notifications', 'unreadCount', 'type'));
     }
 
-    public function perangkat(): View
+    public function perangkat(): ViewContract
     {
         $device = Device::first();
         $isOnline = $device !== null
@@ -82,5 +83,19 @@ class WebController extends Controller
         $unreadCount = Notification::where('is_read', false)->count();
 
         return view('perangkat', compact('device', 'isOnline', 'unreadCount'));
+    }
+
+    public function profil(): ViewContract
+    {
+        $user = Auth::user();
+        $totalJelantah = Transaction::where('category', 'jelantah')
+            ->where('status', 'claimed')
+            ->sum('amount');
+        $totalPoints = Transaction::where('category', 'jelantah')
+            ->where('status', 'claimed')
+            ->sum('points_earned');
+        $unreadCount = Notification::where('is_read', false)->count();
+
+        return view('profil', compact('user', 'totalJelantah', 'totalPoints', 'unreadCount'));
     }
 }

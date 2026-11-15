@@ -99,7 +99,7 @@ class MqttListenCommandTest extends TestCase
             'description' => 'Setoran Sampah Anorganik',
             'amount' => 1.2,
             'unit' => 'kg',
-            'points_earned' => 60,
+            'points_earned' => 0,
             'otp_code' => '4821',
             'status' => 'pending',
         ]);
