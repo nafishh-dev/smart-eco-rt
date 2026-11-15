@@ -35,7 +35,7 @@ return [
         'default' => [
 
             // The host and port to which the client shall connect.
-            'host' => env('MQTT_HOST'),
+            'host' => env('MQTT_HOST', 'broker.hivemq.com'),
             'port' => env('MQTT_PORT', 1883),
 
             // The MQTT protocol version used for the connection.
@@ -79,12 +79,6 @@ return [
                     'client_certificate_key_file' => env('MQTT_TLS_CLIENT_CERT_KEY_FILE'),
                     'client_certificate_key_passphrase' => env('MQTT_TLS_CLIENT_CERT_KEY_PASSPHRASE'),
                     'alpn' => env('MQTT_TLS_ALPN'),
-                ],
-
-                // Credentials used for authentication and authorization.
-                'auth' => [
-                    'username' => env('MQTT_AUTH_USERNAME'),
-                    'password' => env('MQTT_AUTH_PASSWORD'),
                 ],
 
                 // Can be used to declare a last will during connection. The last will
