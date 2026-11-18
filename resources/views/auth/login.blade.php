@@ -41,6 +41,8 @@
                 <button class="button button--primary button--full auth-submit" type="submit">Masuk</button>
             </form>
 
+            <a class="auth-claim-link" href="{{ route('klaim') }}">Warga? Klaim Setoran &amp; Cek Poin di sini →</a>
+
             <aside class="demo-account">
                 <strong>Akun demo untuk pengujian</strong>
                 <span>Email <code>admin@smartecort.id</code></span>

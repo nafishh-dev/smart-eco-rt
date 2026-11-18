@@ -47,7 +47,11 @@ class MqttListenCommandTest extends TestCase
                 $callbacks['smarteco/pandes/sensor']('smarteco/pandes/sensor', '{invalid json');
                 $callbacks['smarteco/pandes/sensor'](
                     'smarteco/pandes/sensor',
-                    '{"id_hub":"PANDES-HUB-01","jarak_jelantah":20,"jarak_sampah":12,"liter_jelantah":1.3,"kg_anorganik":7.1}',
+                    '{"id_hub":"PANDES-HUB-01","jarak_jelantah":20,"jarak_sampah":25,"liter_jelantah":1.3,"kg_anorganik":7.1}',
+                );
+                $callbacks['smarteco/pandes/sensor'](
+                    'smarteco/pandes/sensor',
+                    '{"id_hub":"PANDES-HUB-01","jarak_jelantah":999,"jarak_sampah":5,"liter_jelantah":1.3,"kg_anorganik":7.1}',
                 );
                 $callbacks['smarteco/pandes/transaksi']('smarteco/pandes/transaksi', '{invalid json');
                 $callbacks['smarteco/pandes/transaksi'](
@@ -56,6 +60,7 @@ class MqttListenCommandTest extends TestCase
                 );
             });
 
+        $messageReceivedAt = now();
         MQTT::shouldReceive('connection')->once()->andReturn($mqtt);
 
         $this->artisan('mqtt:listen')->assertExitCode(0);
@@ -73,6 +78,11 @@ class MqttListenCommandTest extends TestCase
             'capacity_percent' => 100,
             'status' => 'hampir_penuh',
         ]);
+        foreach (Transaction::all() as $transaction) {
+            $expiresIn = abs($transaction->expires_at->diffInSeconds($messageReceivedAt));
+            $this->assertGreaterThanOrEqual(179, $expiresIn);
+            $this->assertLessThanOrEqual(181, $expiresIn);
+        }
         $this->assertDatabaseHas('notifications', [
             'bin_category' => 'jelantah',
             'capacity_snapshot' => 86,

@@ -38,6 +38,10 @@
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 22h8m-4-4v4M7 10h3m-3 4h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                 Perangkat
             </a>
+            <a href="{{ route('warga') }}" @class(['nav-link', 'is-active' => request()->routeIs('warga*')])>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20m6.5-9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm6-7.5a4 4 0 0 1 0 7.7m2 3.3a4 4 0 0 1 3.5 4V20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                Warga
+            </a>
         </nav>
         <a class="profile-button" href="{{ route('profil') }}" aria-label="Buka profil">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.8"/><path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -78,20 +82,6 @@
     </nav>
 
     <section class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></section>
-
-    <dialog class="action-dialog" id="otp-modal" aria-labelledby="otp-modal-title">
-        <form class="dialog-card" id="otp-form">
-            <button class="dialog-close icon-button" type="button" data-close-modal aria-label="Tutup">×</button>
-            <span class="dialog-icon dialog-icon--green" aria-hidden="true">✓</span>
-            <h2 id="otp-modal-title">Klaim Kode OTP</h2>
-            <p class="muted">Masukkan kode dari perangkat untuk mencatat setoran Anda.</p>
-            <label class="field-label" for="otp-code">Kode OTP</label>
-            <input id="otp-code" name="otp_code" class="text-input otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4}" minlength="4" maxlength="4" placeholder="0000" required>
-            <label class="field-label" for="citizen-name">Nama warga <span class="muted">(opsional)</span></label>
-            <input id="citizen-name" name="citizen_name" class="text-input" type="text" maxlength="100" placeholder="Warga RT">
-            <button class="button button--primary button--full" type="submit">Konfirmasi Klaim</button>
-        </form>
-    </dialog>
 
     <dialog class="action-dialog" id="servo-modal" aria-labelledby="servo-modal-title">
         <div class="dialog-card">

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Bin;
 use App\Models\Device;
 use App\Models\Notification;
+use App\Models\Resident;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -70,6 +71,89 @@ class SmartEcoControllerTest extends TestCase
             ->assertExactJson(['message' => 'Kode OTP tidak valid atau sudah kedaluwarsa.']);
 
         $this->assertDatabaseHas('transactions', ['otp_code' => '4821', 'status' => 'pending']);
+    }
+
+    public function test_public_claim_links_pending_settlements_to_resident_and_credits_only_oil_points(): void
+    {
+        $resident = Resident::create([
+            'name' => 'Budi Santoso',
+            'phone' => '081234567801',
+        ]);
+        Transaction::create([
+            'hub_id' => 'PANDES-HUB-01',
+            'category' => 'jelantah',
+            'description' => 'Minyak Dapur Bekas',
+            'amount' => 0.5,
+            'unit' => 'L',
+            'points_earned' => 50,
+            'otp_code' => '4821',
+            'status' => 'pending',
+            'expires_at' => now()->addMinutes(3),
+        ]);
+        Transaction::create([
+            'hub_id' => 'PANDES-HUB-01',
+            'category' => 'anorganik',
+            'description' => 'Setoran Sampah Anorganik',
+            'amount' => 1.2,
+            'unit' => 'kg',
+            'points_earned' => 0,
+            'otp_code' => '4821',
+            'status' => 'pending',
+            'expires_at' => now()->addMinutes(3),
+        ]);
+        MQTT::shouldReceive('publish')
+            ->once()
+            ->with('smarteco/pandes/klaim_sukses', 'OK');
+
+        $this->get('/klaim')->assertOk();
+        $this->postJson('/api/claim-otp', [
+            'otp_code' => '4821',
+            'phone' => $resident->phone,
+        ])
+            ->assertOk()
+            ->assertJsonPath('resident_name', 'Budi Santoso')
+            ->assertJsonPath('total_points', 50)
+            ->assertJsonPath('points_balance', 50);
+
+        $this->assertSame(50, $resident->fresh()->points_balance);
+        $this->assertSame(2, Transaction::where('resident_id', $resident->id)
+            ->where('citizen_name', 'Budi Santoso')
+            ->where('status', 'claimed')
+            ->count());
+    }
+
+    public function test_resident_can_check_points_balance_without_authentication(): void
+    {
+        Resident::create([
+            'name' => 'Siti Aminah',
+            'phone' => '081234567802',
+            'points_balance' => 75,
+        ]);
+
+        $this->getJson('/api/residents/balance?phone=081234567802')
+            ->assertOk()
+            ->assertJsonPath('resident_name', 'Siti Aminah')
+            ->assertJsonPath('points_balance', 75);
+    }
+
+    public function test_it_rejects_an_otp_created_more_than_three_minutes_ago(): void
+    {
+        $transaction = Transaction::create([
+            'hub_id' => 'PANDES-HUB-01',
+            'category' => 'jelantah',
+            'description' => 'Minyak Dapur Bekas',
+            'amount' => 0.5,
+            'unit' => 'L',
+            'points_earned' => 50,
+            'otp_code' => '4821',
+            'status' => 'pending',
+            'expires_at' => now()->addMinute(),
+        ]);
+        $transaction->forceFill(['created_at' => now()->subMinutes(4)])->save();
+
+        $this->postJson('/api/claim-otp', ['otp_code' => '4821'])
+            ->assertUnprocessable()
+            ->assertExactJson(['message' => 'Kode OTP tidak valid atau sudah kedaluwarsa.']);
     }
 
     public function test_it_empties_a_bin_and_resolves_its_active_notifications(): void
@@ -182,7 +266,7 @@ class SmartEcoControllerTest extends TestCase
             'name' => 'Pengurus RT 03',
             'email' => 'admin@smartecort.id',
         ]));
-        $this->get('/')->assertOk();
+        $this->get('/dashboard')->assertOk()->assertDontSee('otp-form');
         $this->get('/riwayat')
             ->assertOk()
             ->assertSee('+50 Poin Eco')
@@ -197,6 +281,7 @@ class SmartEcoControllerTest extends TestCase
             ->assertSee('PANDES-HUB-01')
             ->assertSee('0,5')
             ->assertSee('50');
+        $this->get('/warga')->assertOk();
         $this->get('/riwayat/export-pdf')
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf')

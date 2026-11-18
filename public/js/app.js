@@ -83,26 +83,95 @@
         });
     });
 
-    const otpForm = document.getElementById('otp-form');
-    otpForm?.addEventListener('submit', async (event) => {
+    const publicClaimForm = document.getElementById('public-claim-form');
+    publicClaimForm?.addEventListener('submit', async (event) => {
         event.preventDefault();
-        if (!otpForm.reportValidity()) return;
+        if (!publicClaimForm.reportValidity()) return;
 
-        const submitButton = otpForm.querySelector('[type="submit"]');
-        const formData = new FormData(otpForm);
+        const submitButton = publicClaimForm.querySelector('[type="submit"]');
+        const formData = new FormData(publicClaimForm);
         setBusy(submitButton, true);
 
         try {
             const result = await postJson('/api/claim-otp', {
                 otp_code: formData.get('otp_code'),
-                citizen_name: formData.get('citizen_name') || null,
+                phone: formData.get('phone'),
             });
+            const residentPhone = formData.get('phone');
 
-            closeDialog(otpForm.closest('dialog'));
-            otpForm.reset();
-            showToast(`Klaim berhasil. +${result.total_points ?? 0} Poin Eco.`);
-            refreshLiveStatus();
+            const feedback = document.getElementById('claim-feedback');
+            if (feedback) {
+                feedback.hidden = false;
+                feedback.textContent = `Setoran berhasil diklaim oleh ${result.resident_name}. ${result.total_points > 0 ? `+${result.total_points} Poin Eco ditambahkan ke saldo.` : 'Setoran ini tidak memperoleh poin.'}`;
+                feedback.classList.remove('form-feedback--error');
+            }
+            const balancePhone = document.getElementById('balance-phone');
+            const balanceResult = document.getElementById('balance-result');
+            if (balancePhone && balanceResult && result.points_balance !== null) {
+                balancePhone.value = residentPhone;
+                balanceResult.hidden = false;
+                balanceResult.classList.remove('balance-result--error');
+                balanceResult.replaceChildren();
+
+                const name = document.createElement('span');
+                name.textContent = result.resident_name;
+                const points = document.createElement('strong');
+                points.textContent = `${Number(result.points_balance).toLocaleString('id-ID')} Poin Eco`;
+                balanceResult.append(name, points);
+            }
+            showToast(result.message || 'Setoran berhasil diklaim.');
+            publicClaimForm.reset();
         } catch (error) {
+            showToast(error.message, 'error');
+            const feedback = document.getElementById('claim-feedback');
+            if (feedback) {
+                feedback.hidden = false;
+                feedback.textContent = error.message;
+                feedback.classList.add('form-feedback--error');
+            }
+        } finally {
+            setBusy(submitButton, false);
+        }
+    });
+
+    const balanceForm = document.getElementById('balance-form');
+    balanceForm?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!balanceForm.reportValidity()) return;
+
+        const submitButton = balanceForm.querySelector('[type="submit"]');
+        const phone = new FormData(balanceForm).get('phone');
+        const resultNode = document.getElementById('balance-result');
+        setBusy(submitButton, true);
+
+        try {
+            const query = new URLSearchParams({ phone });
+            const response = await fetch(`/api/residents/balance?${query}`, {
+                headers: { Accept: 'application/json' },
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || 'Saldo warga tidak dapat ditemukan.');
+            }
+
+            if (resultNode) {
+                resultNode.hidden = false;
+                resultNode.classList.remove('balance-result--error');
+                resultNode.replaceChildren();
+
+                const name = document.createElement('span');
+                name.textContent = result.resident_name;
+                const points = document.createElement('strong');
+                points.textContent = `${Number(result.points_balance).toLocaleString('id-ID')} Poin Eco`;
+                resultNode.append(name, points);
+            }
+        } catch (error) {
+            if (resultNode) {
+                resultNode.hidden = false;
+                resultNode.classList.add('balance-result--error');
+                resultNode.textContent = error.message;
+            }
             showToast(error.message, 'error');
         } finally {
             setBusy(submitButton, false);

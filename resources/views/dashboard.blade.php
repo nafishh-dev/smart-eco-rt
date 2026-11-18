@@ -94,11 +94,16 @@
             </div>
         </div>
         <div class="quick-action-grid">
-            <button class="quick-action quick-action--primary" type="button" data-open-modal="otp-modal">
+            <a class="quick-action quick-action--primary" href="{{ route('klaim') }}">
                 <span class="quick-action__icon" aria-hidden="true">＋</span>
-                <span><strong>Klaim Kode OTP</strong><small>Catat setoran dan kumpulkan poin</small></span>
+                <span><strong>Halaman Klaim Warga</strong><small>Klaim OTP dan periksa saldo poin</small></span>
                 <span class="quick-action__arrow" aria-hidden="true">→</span>
-            </button>
+            </a>
+            <a class="quick-action" href="{{ route('warga') }}">
+                <span class="quick-action__icon quick-action__icon--green" aria-hidden="true">♙</span>
+                <span><strong>Kelola Data Warga</strong><small>Tambah warga dan tukar poin</small></span>
+                <span class="quick-action__arrow" aria-hidden="true">→</span>
+            </a>
             <button class="quick-action" type="button" data-open-modal="servo-modal">
                 <span class="quick-action__icon quick-action__icon--blue" aria-hidden="true">↕</span>
                 <span><strong>Buka Tutup Sensor</strong><small>Pilih wadah yang akan dibuka</small></span>

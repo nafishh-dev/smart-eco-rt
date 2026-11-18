@@ -17,7 +17,7 @@ class ExampleTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
 
-        $response = $this->get('/');
+        $response = $this->get('/dashboard');
 
         $response->assertStatus(200);
     }

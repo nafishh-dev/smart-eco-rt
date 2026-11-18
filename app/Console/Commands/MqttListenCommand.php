@@ -83,6 +83,11 @@ class MqttListenCommand extends Command
             }
 
             $otpCode = (string) $data['kode_otp'];
+            if (! preg_match('/^\d{4}$/D', $otpCode)) {
+                $this->error("Kode OTP tidak valid pada topik [{$topic}].");
+
+                return;
+            }
             $literJelantah = (float) $data['liter_jelantah'];
             $kgAnorganik = (float) $data['kg_anorganik'];
 
@@ -96,7 +101,7 @@ class MqttListenCommand extends Command
                     'points_earned' => (int) round($literJelantah * 100),
                     'otp_code' => $otpCode,
                     'status' => 'pending',
-                    'expires_at' => now()->addMinutes(5),
+                    'expires_at' => now()->addMinutes(3),
                 ]);
             }
 
@@ -110,7 +115,7 @@ class MqttListenCommand extends Command
                     'points_earned' => 0,
                     'otp_code' => $otpCode,
                     'status' => 'pending',
-                    'expires_at' => now()->addMinutes(5),
+                    'expires_at' => now()->addMinutes(3),
                 ]);
             }
 
@@ -165,7 +170,7 @@ class MqttListenCommand extends Command
         }
 
         if ($distance !== 999.0) {
-            $bin->capacity_percent = $this->capacityFromDistance($distance);
+            $bin->capacity_percent = $this->capacityFromDistance($distance, $category);
         }
 
         $bin->current_weight = max(0, $weight);
@@ -188,8 +193,10 @@ class MqttListenCommand extends Command
         }
     }
 
-    private function capacityFromDistance(float $distance): int
+    private function capacityFromDistance(float $distance, string $category): int
     {
-        return max(0, min(100, (int) round(((50 - $distance) / (50 - 15)) * 100)));
+        [$emptyDistance, $fullDistance] = $category === 'anorganik' ? [25, 5] : [50, 15];
+
+        return max(0, min(100, (int) round((($emptyDistance - $distance) / ($emptyDistance - $fullDistance)) * 100)));
     }
 }

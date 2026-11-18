@@ -38,7 +38,7 @@
                     </span>
                     <div class="history-item__body">
                         <strong>{{ $transaction->description }}</strong>
-                        <span>{{ $transaction->citizen_name }} · {{ $transaction->created_at->locale('id')->translatedFormat('d F Y, H:i') }}</span>
+                        <span>{{ $transaction->resident?->name ?? $transaction->citizen_name }} · {{ $transaction->created_at->locale('id')->translatedFormat('d F Y, H:i') }}</span>
                     </div>
                     <div class="history-item__amount">
                         <strong>{{ number_format($transaction->amount, 1, ',', '.') }} {{ $transaction->unit }}</strong>

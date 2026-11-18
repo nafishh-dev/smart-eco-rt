@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Bin;
 use App\Models\Device;
 use App\Models\Notification;
+use App\Models\Resident;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -31,6 +32,21 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Pengurus RT 03',
                 'password' => bcrypt('password'),
+            ],
+        );
+
+        $budi = Resident::firstOrCreate(
+            ['phone' => '081234567801'],
+            [
+                'name' => 'Budi Santoso',
+                'points_balance' => 50,
+            ],
+        );
+        $siti = Resident::firstOrCreate(
+            ['phone' => '081234567802'],
+            [
+                'name' => 'Siti Aminah',
+                'points_balance' => 0,
             ],
         );
 
@@ -100,12 +116,12 @@ class DatabaseSeeder extends Seeder
         );
 
         foreach ([
-            ['organik', 'Setoran sampah organik', 2.5, 'kg', 0, 'Budi', 1],
-            ['anorganik', 'Setoran sampah anorganik', 3.2, 'kg', 0, 'Siti', 2],
-            ['jelantah', 'Setoran minyak jelantah', 1.0, 'Liter', 50, 'Andi', 3],
-            ['organik', 'Setoran sampah organik', 1.8, 'kg', 0, 'Rina', 5],
-            ['anorganik', 'Setoran sampah anorganik', 2.1, 'kg', 0, 'Dewi', 6],
-        ] as [$category, $description, $amount, $unit, $points, $citizen, $daysAgo]) {
+            ['organik', 'Setoran sampah organik', 2.5, 'kg', 0, 'Budi', 1, $budi],
+            ['anorganik', 'Setoran sampah anorganik', 3.2, 'kg', 0, 'Siti', 2, $siti],
+            ['jelantah', 'Setoran minyak jelantah', 1.0, 'Liter', 50, 'Andi', 3, $budi],
+            ['organik', 'Setoran sampah organik', 1.8, 'kg', 0, 'Rina', 5, $siti],
+            ['anorganik', 'Setoran sampah anorganik', 2.1, 'kg', 0, 'Dewi', 6, $budi],
+        ] as [$category, $description, $amount, $unit, $points, $citizen, $daysAgo, $resident]) {
             $createdAt = now()->subDays($daysAgo);
 
             Transaction::updateOrCreate(
@@ -117,6 +133,7 @@ class DatabaseSeeder extends Seeder
                     'citizen_name' => $citizen,
                 ],
                 [
+                    'resident_id' => $resident->id,
                     'unit' => $unit,
                     'points_earned' => $points,
                     'status' => 'claimed',

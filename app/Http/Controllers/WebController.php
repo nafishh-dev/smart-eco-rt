@@ -5,15 +5,23 @@ namespace App\Http\Controllers;
 use App\Models\Bin;
 use App\Models\Device;
 use App\Models\Notification;
+use App\Models\Resident;
 use App\Models\Transaction;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View as ViewContract;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class WebController extends Controller
 {
+    public function publicClaim(): ViewContract
+    {
+        return view('klaim');
+    }
+
     public function dashboard(): ViewContract
     {
         $bins = Bin::all()->keyBy('category');
@@ -36,6 +44,7 @@ class WebController extends Controller
 
         $transactions = Transaction::where('status', 'claimed')
             ->when($category !== null, fn ($query) => $query->where('category', $category))
+            ->with('resident')
             ->orderByDesc('created_at')
             ->get();
         $weeklyCount = Transaction::where('status', 'claimed')
@@ -97,5 +106,51 @@ class WebController extends Controller
         $unreadCount = Notification::where('is_read', false)->count();
 
         return view('profil', compact('user', 'totalJelantah', 'totalPoints', 'unreadCount'));
+    }
+
+    public function warga(): ViewContract
+    {
+        $residents = Resident::orderBy('name')->get();
+        $unreadCount = Notification::where('is_read', false)->count();
+
+        return view('warga', compact('residents', 'unreadCount'));
+    }
+
+    public function storeResident(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:20', 'unique:residents,phone'],
+        ]);
+
+        Resident::create($validated);
+
+        return redirect()->route('warga')->with('status', 'Data warga berhasil ditambahkan.');
+    }
+
+    public function redeemPoints(Request $request, Resident $resident): RedirectResponse
+    {
+        $validated = $request->validate([
+            'points' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $redeemed = DB::transaction(function () use ($resident, $validated): bool {
+            $lockedResident = Resident::whereKey($resident->id)->lockForUpdate()->firstOrFail();
+
+            if ($lockedResident->points_balance < $validated['points']) {
+                return false;
+            }
+
+            $lockedResident->decrement('points_balance', $validated['points']);
+
+            return true;
+        });
+
+        if (! $redeemed) {
+            return redirect()->route('warga')
+                ->withErrors(['points' => 'Saldo poin warga tidak mencukupi.']);
+        }
+
+        return redirect()->route('warga')->with('status', 'Penukaran poin berhasil dicatat.');
     }
 }

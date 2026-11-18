@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
     protected $fillable = [
+        'resident_id',
         'hub_id',
         'category',
         'description',
@@ -24,4 +26,9 @@ class Transaction extends Model
         'points_earned' => 'integer',
         'expires_at' => 'datetime',
     ];
+
+    public function resident(): BelongsTo
+    {
+        return $this->belongsTo(Resident::class);
+    }
 }

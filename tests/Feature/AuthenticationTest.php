@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Resident;
 use App\Models\Transaction;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
@@ -20,6 +21,7 @@ class AuthenticationTest extends TestCase
         $user = User::where('email', 'admin@smartecort.id')->firstOrFail();
         $this->assertSame('Pengurus RT 03', $user->name);
         $this->assertTrue(Hash::check('password', $user->password));
+        $this->assertSame(2, Resident::count());
 
         $this->get('/login')->assertOk();
         $this->post('/login', [
@@ -28,7 +30,7 @@ class AuthenticationTest extends TestCase
         ])->assertRedirect(route('dashboard'));
 
         $this->assertAuthenticatedAs($user);
-        $this->get('/')->assertOk();
+        $this->get('/dashboard')->assertOk();
 
         $this->post('/logout')->assertRedirect(route('login'));
         $this->assertGuest();
@@ -37,15 +39,26 @@ class AuthenticationTest extends TestCase
     public function test_web_pages_redirect_guests_to_login(): void
     {
         foreach ([
-            '/',
+            '/dashboard',
             '/riwayat',
             '/riwayat/export-pdf',
             '/notifikasi',
             '/perangkat',
             '/profil',
+            '/warga',
         ] as $uri) {
             $this->get($uri)->assertRedirect(route('login'));
         }
+    }
+
+    public function test_home_redirects_to_public_claim_page_and_login_links_to_claim(): void
+    {
+        $this->get('/')->assertRedirect(route('klaim'));
+        $this->get('/klaim')->assertOk();
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee('Warga? Klaim Setoran')
+            ->assertSee(route('klaim'));
     }
 
     public function test_database_seeder_awards_points_only_for_jelantah(): void
